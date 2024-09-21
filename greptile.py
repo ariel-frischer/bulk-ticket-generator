@@ -17,7 +17,6 @@ class GreptileAPI:
     def get_repository_info(self, repository_id: str) -> Dict:
         url = f"{self.base_url}/repositories/{repository_id}"
         response = requests.get(url, headers=self.headers)
-        print(f": greptile.py:18: response={response}")
         response.raise_for_status()
         return response.json()
 
@@ -37,12 +36,9 @@ class GreptileAPI:
     def is_repository_indexed(self, remote: str, repository: str, branch: str) -> bool:
         readable_repository_id = f"{remote}:{branch}:{repository}"
         repository_id = urllib.parse.quote_plus(readable_repository_id)
-        print(f": greptile.py:41: repository_id={repository_id}")
 
         try:
             response = self.get_repository_info(repository_id)
-            print(f": greptile.py:38: response={response}")
-            print(f": RESPONSE STATUS={response.get('status')}")
             return response.get("status") == "completed"
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 404:

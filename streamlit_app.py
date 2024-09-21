@@ -95,18 +95,25 @@ prompt_mod = f"Create up to {num_tickets} tickets based on the following prompt:
 st.info(
     "Will automatically index your repository with Greptile if it hasn't already been indexed."
 )
+response_format_prompt = """
+    Each ticket title and description should be distinct from one another.
+    You must respond in JSON format with the following structure: "tickets": List[Object], 
+    Where each Object has the following keys:
+    title: str, body: str, labels: List[str]
+    Do not response with any code brackets like ```json ONLY respond in pure JSON.
+"""
 
-greptile_content = prompt_mod + "\n" + prompt
+greptile_content = prompt_mod + "\n" + prompt + "\n" + response_format_prompt
 
 if st.button("Create Ticket List", disabled=not are_api_keys_provided()):
     if repository:
         message_id = str(uuid.uuid4())
         try:
-            with st.spinner("Checking repository indexing status..."):
+            with st.spinner("Ensuring repository is indexed..."):
                 greptile.ensure_repository_indexed(remote, repository, branch)
 
             indexing_status = False
-            with st.spinner("Waiting for repository to be indexed..."):
+            with st.spinner("Checking if repository is indexed..."):
                 for _ in range(90):  # 15 minutes timeout (90 * 10 seconds)
                     if greptile.is_repository_indexed(remote, repository, branch):
                         indexing_status = True
@@ -118,17 +125,17 @@ if st.button("Create Ticket List", disabled=not are_api_keys_provided()):
                     "Repository indexing timed out after 15 minutes. Check your email to see if the repository has been indexed then try again."
                 )
 
-            st.success("Repository is indexed.")
+            st.toast("Repository is indexed.")
 
             with st.spinner("Querying Greptile..."):
                 response = greptile.query(
                     messages=[
-                        {"id": message_id, "content": greptile_content, "role": "user"}
+                        {"id": message_id, "content": greptile_content, "role": "user"},
                     ],
                     repositories=[
                         {"remote": remote, "repository": repository, "branch": branch}
                     ],
-                    genius=True,
+                    genius=False,
                 )
 
             st.success("Query completed successfully!")
