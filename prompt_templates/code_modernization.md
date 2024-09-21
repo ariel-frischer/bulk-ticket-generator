@@ -1,0 +1,3 @@
+# Code Modernization Epic
+
+Generate a list of tasks to modernize our Python codebase and development practices. Consider aspects such as upgrading to the latest stable Python version, adopting modern language features and syntax, implementing type hinting, migrating to efficient libraries and frameworks, containerization, exploring microservices or serverless architectures where applicable, implementing modern logging and monitoring solutions, adopting infrastructure as code, and modernizing the development environment. The goal is to leverage the latest technologies and best practices to improve code efficiency, maintainability, and developer productivity.
