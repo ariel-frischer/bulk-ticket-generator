@@ -1,14 +1,15 @@
 import requests
-import os
 from typing import List, Dict, Optional
+import streamlit as st
+import os
 
 
 class GreptileAPI:
     def __init__(self):
         self.url = "https://api.greptile.com/v2/query"
         self.headers = {
-            "Authorization": f"Bearer {os.environ.get('GREPTILE_API_KEY')}",
-            "X-GitHub-Token": os.environ.get("GITHUB_TOKEN"),
+            "Authorization": f"Bearer {os.environ.get('GREPTILE_API_KEY') or st.session_state.greptile_api_key}",
+            "X-GitHub-Token": os.environ.get('GITHUB_TOKEN') or st.session_state.github_token,
             "Content-Type": "application/json",
         }
 
@@ -20,16 +21,6 @@ class GreptileAPI:
         stream: bool = False,
         genius: bool = True,
     ) -> requests.Response:
-        """
-        Send a query to the Greptile API.
-
-        :param messages: List of message dictionaries with 'id', 'content', and 'role'
-        :param repositories: List of repository dictionaries with 'remote', 'branch', and 'repository'
-        :param session_id: Optional session ID
-        :param stream: Whether to stream the response
-        :param genius: Whether to use the genius feature
-        :return: Response from the Greptile API
-        """
         payload = {
             "messages": messages,
             "repositories": repositories,
@@ -40,12 +31,3 @@ class GreptileAPI:
 
         response = requests.post(self.url, json=payload, headers=self.headers)
         return response
-
-
-# Example usage:
-# greptile = GreptileAPI()
-# response = greptile.query(
-#     messages=[{"id": "1", "content": "What are the main functions in the codebase?", "role": "user"}],
-#     repositories=[{"remote": "https://github.com/username/repo.git", "branch": "main", "repository": "repo"}]
-# )
-# print(response.text)

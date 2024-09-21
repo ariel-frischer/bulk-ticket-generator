@@ -29,3 +29,4 @@ A simple Streamlit app showing an internal tool that lets you create, manage, an
 ## Additional Greptile follow-up ideas:
 * Code Editor Bot
 * Display High Level Software Architecture (UML or Mermaid Flowcharts)
+* Bot that helps with Dependency Upgrades and Migrations
