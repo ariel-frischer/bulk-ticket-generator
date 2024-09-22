@@ -11,11 +11,11 @@ from github import Github
 def create_ticket_list(
     repository, remote, branch, greptile, greptile_content, num_tickets
 ):
-    message_id = str(uuid.uuid4())
+    is_prod = os.environ.get("STREAMLIT_ENV", "development") == "production"
     try:
         mock_file = os.environ.get("MOCK_FILE")
-        if mock_file and Path(mock_file).is_file():
-            st.info(f"Using mock data from {mock_file}")
+        if not is_prod and mock_file and Path(mock_file).is_file():
+            st.toast(f"Using mock data from {mock_file}")
             with open(mock_file, "r") as f:
                 response_json = json.load(f)
         else:
@@ -39,6 +39,7 @@ def create_ticket_list(
             st.toast("Repository is indexed.")
 
             with st.spinner("Querying Greptile..."):
+                message_id = str(uuid.uuid4())
                 response = greptile.query(
                     messages=[
                         {
@@ -106,6 +107,7 @@ def display_and_edit_tickets(tickets, repository, github_token):
 
     edited_tickets = st.data_editor(
         tickets,
+        hide_index=True,
         column_config={
             "create_issue": st.column_config.CheckboxColumn("Create?", default=True),
             "title": st.column_config.TextColumn("Title", width="medium"),
@@ -113,8 +115,6 @@ def display_and_edit_tickets(tickets, repository, github_token):
             "labels": st.column_config.ListColumn("Labels", width="medium"),
         },
         column_order=["create_issue", "title", "body", "labels"],
-        num_rows="dynamic",
-        width=800,
     )
 
     st.info(
@@ -130,9 +130,7 @@ def display_and_edit_tickets(tickets, repository, github_token):
 
 def create_github_issues(tickets, repository, github_token):
     try:
-        github_token_2 = os.environ.get("GITHUB_TOKEN_2")
-        # print(f": ticket_list.py:128: github_token_2={github_token_2}")
-        auth = Auth.Token(github_token_2)
+        auth = Auth.Token(github_token)
         g = Github(auth=auth)
         repo = g.get_repo(repository)
 

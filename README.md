@@ -1,6 +1,6 @@
-# 🎫 Support tickets template
+# 🎫 Bulk Ticket Generator
 
-A simple Streamlit app showing an internal tool that lets you create, manage, and visualize support tickets. 
+A simple Streamlit app allowing the bulk generation of Github issues using Greptile codebase context.
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://support-tickets-template.streamlit.app/)
 
@@ -19,11 +19,15 @@ A simple Streamlit app showing an internal tool that lets you create, manage, an
    ```
 
 ## TODO
-* [ ] Integrate Github for actual issue creation
+* [X] Integrate Github for actual issue creation
+* [ ] Add the Issue Templates to the original prompt
 
 ## Roadmap Improvements
-* [ ] Integrate Github/Gitlab for pre-filled dropdown menus for repository inputs.
+* [ ] Retry Handling for LLM to ensure correct JSON response.
+* [ ] Save API keys in a secure manner on the server
+* [ ] Integrate Github for pre-filled dropdown menus for repository inputs.
 * [ ] Allow for dynamic issue templates depending on the category of the issue.
+* [ ] Can generate tickets for alternate platforms like JIRA, Trello, etc.
 
 
 ## Additional Greptile follow-up ideas:

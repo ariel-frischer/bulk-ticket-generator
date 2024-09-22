@@ -7,6 +7,8 @@ from ticket_list import create_ticket_list, display_and_edit_tickets
 st.session_state.greptile_api_key = os.environ.get("GREPTILE_API_KEY", "")
 st.session_state.github_token = os.environ.get("GITHUB_TOKEN", "")
 
+is_prod = os.environ.get("STREAMLIT_ENV", "development") == "production"
+
 st.set_page_config(
     page_title="Batch Issue Generator", page_icon="🎫", layout="centered"
 )
@@ -53,9 +55,14 @@ def are_api_keys_provided():
 st.header("GitHub Repository")
 col1, col2, col3 = st.columns(3)
 with col1:
-    remote = st.text_input("Remote", value="github")
+    remote = st.text_input("Remote", value="github", disabled=True)
 with col2:
-    repository = st.text_input("Repository", value="ariel-frischer/alias-gen")
+    val = "ariel-frischer/alias-gen" if not is_prod else ""
+    repository = st.text_input(
+        "Repository",
+        value=val,
+        placeholder="ariel-frischer/alias-gen",
+    )
 with col3:
     branch = st.text_input("Branch", value="main")
 
@@ -93,7 +100,7 @@ num_tickets = st.number_input(
     "Number of tickets to generate:", min_value=1, max_value=10, value=1
 )
 prompt_mod = f"Create up to {num_tickets} tickets based on the following prompt:"
-st.info(
+st.markdown(
     "Will automatically index your repository with Greptile if it hasn't already been indexed."
 )
 response_format_prompt = """
