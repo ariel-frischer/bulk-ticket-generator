@@ -117,16 +117,15 @@ def display_and_edit_tickets(tickets, repository, github_token):
         column_order=["create_issue", "title", "body", "labels"],
     )
 
-    st.info(
+    st.markdown(
         """
-        Must have correct permissions to create issues in the repository.
-        https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#create-an-issue"
+        Must have correct Github token permissions to create issues:
+        https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#create-an-issue
         """
     )
 
     if st.button("Create Selected GitHub Issues"):
         create_github_issues(edited_tickets, repository, github_token)
-
 
 def create_github_issues(tickets, repository, github_token):
     try:
@@ -146,3 +145,5 @@ def create_github_issues(tickets, repository, github_token):
                 st.success(f"Created issue: {issue.html_url}")
     except Exception as e:
         st.error(f"An error occurred while creating GitHub issues: {str(e)}")
+
+

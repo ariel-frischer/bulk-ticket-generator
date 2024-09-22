@@ -2,6 +2,7 @@ import streamlit as st
 from greptile import GreptileAPI
 import os
 from ticket_list import create_ticket_list, display_and_edit_tickets
+from detailed_tickets import display_detailed_tickets
 
 # Set session state variables from environment variables at startup
 st.session_state.greptile_api_key = os.environ.get("GREPTILE_API_KEY", "")
@@ -83,7 +84,7 @@ prompt_templates = load_templates("prompt_templates")
 
 st.header("Phase 1 - Generate Ticket List Overview")
 st.markdown(
-    "Instruct the LLM generate a list of generalized tickets before creating each in detail."
+    "Instruct the LLM generate a list of generalized tickets before creating each in detail. Uses one Greptile query request."
 )
 
 selected_prompt_template = st.selectbox(
@@ -139,46 +140,7 @@ if st.session_state.create_ticket_list_state and st.session_state.tickets is not
         st.session_state.tickets, repository, st.session_state.github_token
     )
 
-st.markdown("---")
-
-with st.container(border=True):
-    st.header("Github Issue Format")
-
-    selected_template = st.selectbox(
-        "Select a template:", list(ticket_templates.keys())
-    )
-
-    if "preview_mode" not in st.session_state:
-        st.session_state.preview_mode = False
-
-    def toggle_preview():
-        st.session_state.preview_mode = not st.session_state.preview_mode
-
-    st.button(
-        "Preview Markdown" if not st.session_state.preview_mode else "Edit",
-        on_click=toggle_preview,
-    )
-
-    if st.session_state.preview_mode:
-        st.markdown(ticket_templates[selected_template])
-    else:
-        ticket_format = st.text_area(
-            "Edit the ticket format:",
-            value=ticket_templates[selected_template],
-            height=300,
-        )
-
-
-if st.button("Generate Tickets", disabled=not are_api_keys_provided()):
-    st.header("Generated Tickets")
-    for i in range(num_tickets):
-        st.subheader(f"Ticket {i+1}")
-        st.markdown(
-            ticket_format
-            if not st.session_state.preview_mode
-            else ticket_templates[selected_template]
-        )
-        st.markdown("---")
+display_detailed_tickets(num_tickets, are_api_keys_provided, greptile, repository, remote, branch, st.session_state.github_token)
 
 st.markdown("---")
 st.markdown(

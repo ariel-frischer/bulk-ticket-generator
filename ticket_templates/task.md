@@ -1,4 +1,4 @@
-# Task
+# Task Title
 
 ## Description
 [Detailed description of the task]
@@ -13,6 +13,9 @@
 
 ## Estimated Time
 [Estimated time to complete the task]
+
+## Sources
+[List any sources or references]
 
 ## Additional Notes
 [Any additional information or context]
