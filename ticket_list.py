@@ -1,11 +1,10 @@
 import streamlit as st
 import uuid
 import os
-import time
 import json
+import logging
+import asyncio
 from pathlib import Path
-from github import Auth
-from github import Github
 
 
 async def create_ticket_list(
@@ -34,6 +33,7 @@ async def create_ticket_list(
                 st.error(
                     "Repository indexing timed out after 15 minutes. Check your email to see if the repository has been indexed then try again."
                 )
+                logging.error("Repository indexing timed out after 15 minutes.")
                 return None
 
             st.toast("Repository is indexed.")
@@ -91,23 +91,24 @@ async def create_ticket_list(
 
             return tickets
         else:
-            st.error(
-                "Unable to extract tickets from the response. Please check the Greptile API response format."
-            )
-            print("Debug: Raw message received:", message)
-            print(
-                "Debug: Full response JSON:", st.session_state.ticket_list_response_json
+            error_msg = "Unable to extract tickets from the response. Please check the Greptile API response format."
+            st.error(error_msg)
+            logging.error(error_msg)
+            logging.debug("Raw message received: %s", message)
+            logging.debug(
+                "Full response JSON: %s", st.session_state.ticket_list_response_json
             )
             return None
     except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
+        error_msg = f"An error occurred: {str(e)}"
+        st.error(error_msg)
+        logging.error(error_msg)
         return None
 
 
-def display_and_edit_tickets(tickets, repository, github_token):
+def display_and_edit_tickets(tickets):
     st.subheader("Generated Tickets")
 
-    # Display the full response JSON
     if "ticket_list_response_json" in st.session_state:
         with st.expander("See Full Response JSON"):
             st.json(st.session_state.ticket_list_response_json)
@@ -126,8 +127,6 @@ def display_and_edit_tickets(tickets, repository, github_token):
         column_order=["create_issue", "title", "body", "labels"],
     )
 
-    # Save edited tickets to session state
     st.session_state.edited_tickets = edited_tickets
-
 
     return edited_tickets

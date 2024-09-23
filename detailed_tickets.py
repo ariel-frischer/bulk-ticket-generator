@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import json
+import logging
 from github import Auth, Github
 from greptile import GreptileAPI
 import asyncio
@@ -93,7 +94,6 @@ async def create_detailed_tickets(
 def display_and_edit_detailed_tickets(detailed_tickets, repository, github_token):
     st.subheader("Generated Detailed Tickets")
 
-    # Display the full response JSON for each detailed ticket
     if "detailed_tickets_response_json" in st.session_state:
         for i, response_json in enumerate(
             st.session_state.detailed_tickets_response_json
@@ -143,12 +143,14 @@ def create_github_issues(tickets, repository, github_token):
                 )
                 st.success(f"Created detailed issue: {issue.html_url}")
     except Exception as e:
-        st.error(f"An error occurred while creating GitHub issues: {str(e)}")
+        error_msg = f"An error occurred while creating GitHub issues: {str(e)}"
+        st.error(error_msg)
+        logging.error(error_msg)
 
 
 def display_detailed_tickets(
     num_tickets,
-    are_api_keys_provided,
+    api_keys_provided,
     greptile,
     repository,
     remote,
@@ -196,7 +198,7 @@ def display_detailed_tickets(
     if "detailed_tickets" not in st.session_state:
         st.session_state.detailed_tickets = []
 
-    is_generate_disabled = not are_api_keys_provided() or not st.session_state.get(
+    is_generate_disabled = not api_keys_provided() or not st.session_state.get(
         "edited_tickets", []
     )
 
@@ -238,9 +240,9 @@ def display_detailed_tickets(
                             f"Processed {i + 1}/{len(selected_tickets)} tickets"
                         )
                     else:
-                        st.warning(
-                            f"Failed to generate detailed ticket for: {selected_tickets[i]['title']}"
-                        )
+                        warning_msg = f"Failed to generate detailed ticket for: {selected_tickets[i]['title']}"
+                        st.warning(warning_msg)
+                        logging.warning(warning_msg)
 
             asyncio.run(process_tickets())
 

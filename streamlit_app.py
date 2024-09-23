@@ -5,7 +5,6 @@ import asyncio
 from ticket_list import create_ticket_list, display_and_edit_tickets
 from detailed_tickets import display_detailed_tickets
 
-# Set session state variables from environment variables at startup
 st.session_state.greptile_api_key = os.environ.get("GREPTILE_API_KEY", "")
 st.session_state.github_token = os.environ.get("GITHUB_TOKEN", "")
 
@@ -42,7 +41,7 @@ st.text_input(
 )
 
 
-def are_api_keys_provided():
+def api_keys_provided():
     return bool(st.session_state.greptile_api_key_input) and bool(
         st.session_state.github_token_input
     )
@@ -123,16 +122,16 @@ response_format_prompt = f"""
 
 greptile_content = prompt_mod + "\n" + prompt + "\n" + response_format_prompt
 
-# Initialize session state for ticket list creation
 if "create_ticket_list_state" not in st.session_state:
     st.session_state.create_ticket_list_state = False
 if "tickets" not in st.session_state:
     st.session_state.tickets = None
 
-# if not st.session_state.create_ticket_list_state:
-button_disabled = not are_api_keys_provided()
+button_disabled = not api_keys_provided() or not repository or not branch
 help_text = (
-    "Must Provide Greptile API Key and GitHub Token" if button_disabled else None
+    "Must Provide Greptile API Key and GitHub Token and repository info."
+    if button_disabled
+    else None
 )
 if st.button("Create Ticket List", disabled=button_disabled, help=help_text):
     st.session_state.create_ticket_list_state = True
@@ -153,13 +152,11 @@ if st.button("Create Ticket List", disabled=button_disabled, help=help_text):
         st.error("Please enter a repository name.")
 
 if st.session_state.create_ticket_list_state and st.session_state.tickets is not None:
-    display_and_edit_tickets(
-        st.session_state.tickets, repository, st.session_state.github_token
-    )
+    display_and_edit_tickets(st.session_state.tickets)
 
 display_detailed_tickets(
     num_tickets,
-    are_api_keys_provided,
+    api_keys_provided,
     greptile,
     repository,
     remote,
