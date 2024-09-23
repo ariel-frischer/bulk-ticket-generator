@@ -6,14 +6,14 @@ A simple Streamlit app allowing the bulk generation of Github issues using Grept
 
 ## Features:
 
-🧠 Leverages Greptile to provide codebase context to LLM queries for more relevant ticket generation
-🚀 Runs queries in parallel for faster overall response time
-📝 Includes templates for prompts and tasks to streamline the process
-🎨 Allows custom prompts and GitHub issue creation for flexibility
-🔄 Supports bulk generation of issues, saving time and effort
-🔍 Provides detailed ticket generation with step-by-step implementation details
-🏷️ Supports custom labeling for better organization of issues
-🔧 Allows editing of generated tickets before final submission
+* 🧠 Leverages Greptile for codebase context with LLM queries for efficient ticket generation
+* 🚀 Runs queries in parallel for faster overall response time
+* 📝 Includes templates for prompts and tasks to streamline the process
+* 🎨 Allows custom prompts and GitHub issue creation for flexibility
+* 🔄 Supports bulk generation of issues, saving time and effort
+* 🔍 Provides detailed ticket generation with step-by-step implementation details
+* 🏷️ Supports custom labeling for better organization of issues
+* 🔧 Allows editing of generated tickets before final submission
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://support-tickets-template.streamlit.app/)
 
