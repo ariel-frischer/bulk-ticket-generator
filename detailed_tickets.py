@@ -71,7 +71,7 @@ async def create_detailed_ticket(
         if "tickets" in ticket_data and len(ticket_data["tickets"]) > 0:
             detailed_ticket = ticket_data["tickets"][0]
             detailed_ticket["create_issue"] = True
-            logging.info(
+            logging.warning(
                 f"Successfully created detailed ticket: {detailed_ticket['title']}"
             )
             return detailed_ticket
@@ -146,7 +146,7 @@ def create_github_issues(tickets, repository, github_token):
                     title=ticket["title"], body=body, labels=ticket["labels"]
                 )
                 st.success(f"Created detailed issue: {issue.html_url}")
-                logging.info(f"Created GitHub issue: {issue.html_url}")
+                logging.warning(f"Created GitHub issue: {issue.html_url}")
     except Exception as e:
         error_msg = f"An error occurred while creating GitHub issues: {str(e)}"
         st.error(error_msg)

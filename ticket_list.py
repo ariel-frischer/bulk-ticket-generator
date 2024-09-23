@@ -116,7 +116,7 @@ async def create_ticket_list(
             for ticket in tickets:
                 ticket["create_issue"] = True
 
-            logging.info(f"Successfully extracted {len(tickets)} tickets")
+            logging.warning(f"Successfully extracted {len(tickets)} tickets")
             return tickets
         else:
             error_msg = "Unable to extract tickets from the response this may be due to the LLM providing invalid JSON."
