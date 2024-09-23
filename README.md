@@ -39,6 +39,8 @@ A simple Streamlit app allowing the bulk generation of Github issues using Grept
 * [ ] Retry Handling for LLM to ensure correct JSON response.
 * [ ] Use encrypted local storage to hold user API keys such so they persist on page refresh.
 * [ ] Integrate Greptile "sources" in a way that is brief and relevant to the tasks (filename-only for example).
+* [ ] More prompt templates
+* [ ] User auth and session management with a production deployed database.
 * [ ] Integrate Monitoring tools for better error monitoring.
 * [ ] Save API keys in a secure manner on the server
 * [ ] Integrate Github for pre-filled dropdown menus for repository inputs.

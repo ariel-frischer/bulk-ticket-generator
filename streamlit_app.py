@@ -13,7 +13,7 @@ is_prod = os.environ.get("STREAMLIT_ENV", "development") == "production"
 st.set_page_config(
     page_title="Bulk Ticket Generator", page_icon="🎫", layout="centered"
 )
-st.title("🎫 Batch Ticket Generator")
+st.title("🎫 Bulk Ticket Generator")
 st.markdown(
     """
     * Generate multiple Github issues based on a prompt and an issue template.
@@ -50,7 +50,12 @@ def api_keys_provided():
 st.header("GitHub Repository")
 col1, col2, col3 = st.columns(3)
 with col1:
-    remote = st.text_input("Remote", value="github", disabled=True)
+    remote = st.text_input(
+        "Remote",
+        value="github",
+        disabled=True,
+        help="Only support github repositories for now.",
+    )
 with col2:
     val = "ariel-frischer/alias-gen" if not is_prod else ""
     repository = st.text_input(

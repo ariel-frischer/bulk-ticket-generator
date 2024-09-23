@@ -136,7 +136,7 @@ def create_github_issues(tickets, repository, github_token):
             if ticket.get("create_issue", True):
                 body = (
                     ticket["body"]
-                    + "\n\n---\nAuto-generated issue using Batch Ticket Generator 🎫 + Greptile"
+                    + "\n\n---\nAuto-generated issue using Bulk Ticket Generator 🎫 + Greptile"
                 )
                 issue = repo.create_issue(
                     title=ticket["title"], body=body, labels=ticket["labels"]
