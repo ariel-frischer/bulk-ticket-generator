@@ -91,11 +91,11 @@ async def create_ticket_list(
 
             return tickets
         else:
-            error_msg = "Unable to extract tickets from the response. Please check the Greptile API response format."
+            error_msg = "Unable to extract tickets from the response this may be due to the LLM providing invalid JSON."
             st.error(error_msg)
             logging.error(error_msg)
-            logging.debug("Raw message received: %s", message)
-            logging.debug(
+            logging.warning("Raw message received: %s", message)
+            logging.warning(
                 "Full response JSON: %s", st.session_state.ticket_list_response_json
             )
             return None
