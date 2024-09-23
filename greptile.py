@@ -2,7 +2,8 @@ import requests
 import json
 from typing import List, Dict, Optional
 import urllib.parse
-# import time
+import aiohttp
+import asyncio
 
 
 class GreptileAPI:
@@ -14,13 +15,14 @@ class GreptileAPI:
             "Content-Type": "application/json",
         }
 
-    def get_repository_info(self, repository_id: str) -> Dict:
+    async def get_repository_info(self, repository_id: str) -> Dict:
         url = f"{self.base_url}/repositories/{repository_id}"
-        response = requests.get(url, headers=self.headers)
-        response.raise_for_status()
-        return response.json()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=self.headers) as response:
+                response.raise_for_status()
+                return await response.json()
 
-    def index_repository(self, remote: str, repository: str, branch: str) -> Dict:
+    async def index_repository(self, remote: str, repository: str, branch: str) -> Dict:
         url = f"{self.base_url}/repositories"
         payload = {
             "remote": remote,
@@ -29,40 +31,45 @@ class GreptileAPI:
             "reload": True,
             "notify": True,
         }
-        response = requests.post(url, json=payload, headers=self.headers)
-        response.raise_for_status()
-        return response.json()
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                url, json=payload, headers=self.headers
+            ) as response:
+                response.raise_for_status()
+                return await response.json()
 
-    def is_repository_indexed(self, remote: str, repository: str, branch: str) -> bool:
+    async def is_repository_indexed(
+        self, remote: str, repository: str, branch: str
+    ) -> bool:
         readable_repository_id = f"{remote}:{branch}:{repository}"
         repository_id = urllib.parse.quote_plus(readable_repository_id)
 
         try:
-            response = self.get_repository_info(repository_id)
+            response = await self.get_repository_info(repository_id)
             return response.get("status") == "completed"
-        except requests.exceptions.HTTPError as e:
-            if e.response.status_code == 404:
+        except aiohttp.ClientResponseError as e:
+            if e.status == 404:
                 return False
             raise
 
-    def ensure_repository_indexed(
+    async def ensure_repository_indexed(
         self, remote: str, repository: str, branch: str
     ) -> bool:
-        if not self.is_repository_indexed(remote, repository, branch):
+        if not await self.is_repository_indexed(remote, repository, branch):
             print(f"Repository {remote}/{repository} not indexed. Indexing now...")
-            self.index_repository(remote, repository, branch)
+            await self.index_repository(remote, repository, branch)
         return True
 
-    def query(
+    async def query_async(
         self,
         messages: List[Dict[str, str]],
         repositories: List[Dict[str, str]],
         session_id: Optional[str] = None,
         stream: bool = False,
         genius: bool = True,
-    ) -> requests.Response:
+    ) -> aiohttp.ClientResponse:
         for repo in repositories:
-            self.ensure_repository_indexed(
+            await self.ensure_repository_indexed(
                 repo["remote"], repo["repository"], repo["branch"]
             )
 
@@ -75,15 +82,21 @@ class GreptileAPI:
             "genius": genius,
         }
 
-        response = requests.post(url, json=payload, headers=self.headers)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                url, json=payload, headers=self.headers
+            ) as response:
+                response.raise_for_status()
+                return await response.json()
 
-        try:
-            json_response = response.json()
-            print(f"JSON response: {json_response}")
-        except json.JSONDecodeError:
-            print("Failed to decode JSON response")
-
-        if response.status_code != 200:
-            print(f"Error response: {response.text}")
-
-        return response
+    def query(
+        self,
+        messages: List[Dict[str, str]],
+        repositories: List[Dict[str, str]],
+        session_id: Optional[str] = None,
+        stream: bool = False,
+        genius: bool = True,
+    ) -> requests.Response:
+        return asyncio.run(
+            self.query_async(messages, repositories, session_id, stream, genius)
+        )

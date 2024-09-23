@@ -8,7 +8,7 @@ from github import Auth
 from github import Github
 
 
-def create_ticket_list(
+async def create_ticket_list(
     repository, remote, branch, greptile, greptile_content, num_tickets
 ):
     is_prod = os.environ.get("STREAMLIT_ENV", "development") == "production"
@@ -20,15 +20,15 @@ def create_ticket_list(
                 response_json = json.load(f)
         else:
             with st.spinner("Ensuring repository is indexed..."):
-                greptile.ensure_repository_indexed(remote, repository, branch)
+                await greptile.ensure_repository_indexed(remote, repository, branch)
 
             indexing_status = False
             with st.spinner("Checking if repository is indexed..."):
                 for _ in range(90):  # 15 minutes timeout (90 * 10 seconds)
-                    if greptile.is_repository_indexed(remote, repository, branch):
+                    if await greptile.is_repository_indexed(remote, repository, branch):
                         indexing_status = True
                         break
-                    time.sleep(10)
+                    await asyncio.sleep(10)
 
             if not indexing_status:
                 st.error(
@@ -40,7 +40,7 @@ def create_ticket_list(
 
             with st.spinner("Querying Greptile..."):
                 message_id = str(uuid.uuid4())
-                response = greptile.query(
+                response_json = await greptile.query_async(
                     messages=[
                         {
                             "id": message_id,
@@ -59,10 +59,9 @@ def create_ticket_list(
                 )
 
             st.success("Query completed successfully!")
-            response_json = response.json()
 
-        with st.expander("See Full Response JSON"):
-            st.json(response_json)
+        # Save the response JSON in session state
+        st.session_state.ticket_list_response_json = response_json
 
         message = response_json.get("message", "")
 
@@ -95,6 +94,10 @@ def create_ticket_list(
             st.error(
                 "Unable to extract tickets from the response. Please check the Greptile API response format."
             )
+            print("Debug: Raw message received:", message)
+            print(
+                "Debug: Full response JSON:", st.session_state.ticket_list_response_json
+            )
             return None
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
@@ -103,6 +106,12 @@ def create_ticket_list(
 
 def display_and_edit_tickets(tickets, repository, github_token):
     st.subheader("Generated Tickets")
+
+    # Display the full response JSON
+    if "ticket_list_response_json" in st.session_state:
+        with st.expander("See Full Response JSON"):
+            st.json(st.session_state.ticket_list_response_json)
+
     st.info("Double-click on a row to edit the ticket.")
 
     edited_tickets = st.data_editor(
@@ -117,33 +126,8 @@ def display_and_edit_tickets(tickets, repository, github_token):
         column_order=["create_issue", "title", "body", "labels"],
     )
 
-    st.markdown(
-        """
-        Must have correct Github token permissions to create issues:
-        https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#create-an-issue
-        """
-    )
-
-    if st.button("Create Selected GitHub Issues"):
-        create_github_issues(edited_tickets, repository, github_token)
-
-def create_github_issues(tickets, repository, github_token):
-    try:
-        auth = Auth.Token(github_token)
-        g = Github(auth=auth)
-        repo = g.get_repo(repository)
-
-        for ticket in tickets:
-            if ticket["create_issue"]:
-                body = (
-                    ticket["body"]
-                    + "\n\n---\nAutomated Issue created by: Batch Ticket Generator + Greptile API"
-                )
-                issue = repo.create_issue(
-                    title=ticket["title"], body=body, labels=ticket["labels"]
-                )
-                st.success(f"Created issue: {issue.html_url}")
-    except Exception as e:
-        st.error(f"An error occurred while creating GitHub issues: {str(e)}")
+    # Save edited tickets to session state
+    st.session_state.edited_tickets = edited_tickets
 
 
+    return edited_tickets

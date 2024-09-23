@@ -1,6 +1,7 @@
 import streamlit as st
 from greptile import GreptileAPI
 import os
+import asyncio
 from ticket_list import create_ticket_list, display_and_edit_tickets
 from detailed_tickets import display_detailed_tickets
 
@@ -11,7 +12,7 @@ st.session_state.github_token = os.environ.get("GITHUB_TOKEN", "")
 is_prod = os.environ.get("STREAMLIT_ENV", "development") == "production"
 
 st.set_page_config(
-    page_title="Batch Issue Generator", page_icon="🎫", layout="centered"
+    page_title="Bulk Ticket Generator", page_icon="🎫", layout="centered"
 )
 st.title("🎫 Batch Ticket Generator")
 st.markdown(
@@ -104,12 +105,24 @@ prompt_mod = f"Create up to {num_tickets} tickets based on the following prompt:
 st.markdown(
     "Will automatically index your repository with Greptile if it hasn't already been indexed."
 )
-response_format_prompt = """
-    Each ticket title and description should be distinct from one another.
+response_format_prompt = f"""
+    Create precise and atomic tickets. Each ticket should focus on implementing one specific feature, fixing one particular bug, or addressing one distinct aspect of the project.
+    If you cannot create all specified tasks given the limited number of tickets, that is ok just choose the first {num_tickets} to create in a reasonable order.
+    
+    Guidelines for ticket creation:
+    1. Title: Make it specific and descriptive. It should clearly indicate the single task or feature being addressed.
+    2. Description: Provide a brief but clear explanation of what needs to be done. Focus on the 'what' and 'why', not the 'how'.
+    3. Scope: Ensure each ticket represents a single, self-contained unit of work that can be completed independently.
+    4. Clarity: Avoid vague or general descriptions. Be as specific as possible about what needs to be accomplished.
+    5. Atomicity: If a proposed task seems too large or complex, break it down into smaller, more manageable tickets.
+    6. Decisions: If there ever is a decision to be made, make it in the ticket body. Choose frameworks that are popular and stable.
+
     You must respond in JSON format with the following structure: "tickets": List[Object], 
     Where each Object has the following keys:
     title: str, body: str, labels: List[str]
-    Do not response with any code brackets like ```json ONLY respond in pure JSON.
+    
+    Ensure each ticket title and description is distinct from the others.
+    Do not include any code brackets like ```json. ONLY respond in pure JSON.
 """
 
 greptile_content = prompt_mod + "\n" + prompt + "\n" + response_format_prompt
@@ -124,14 +137,18 @@ if "tickets" not in st.session_state:
 if st.button("Create Ticket List", disabled=not are_api_keys_provided()):
     st.session_state.create_ticket_list_state = True
     if repository:
-        st.session_state.tickets = create_ticket_list(
-            repository,
-            remote,
-            branch,
-            greptile,
-            greptile_content,
-            num_tickets,
-        )
+
+        async def run_create_ticket_list():
+            st.session_state.tickets = await create_ticket_list(
+                repository,
+                remote,
+                branch,
+                greptile,
+                greptile_content,
+                num_tickets,
+            )
+
+        asyncio.run(run_create_ticket_list())
     else:
         st.error("Please enter a repository name.")
 
@@ -140,7 +157,15 @@ if st.session_state.create_ticket_list_state and st.session_state.tickets is not
         st.session_state.tickets, repository, st.session_state.github_token
     )
 
-display_detailed_tickets(num_tickets, are_api_keys_provided, greptile, repository, remote, branch, st.session_state.github_token)
+display_detailed_tickets(
+    num_tickets,
+    are_api_keys_provided,
+    greptile,
+    repository,
+    remote,
+    branch,
+    st.session_state.github_token,
+)
 
 st.markdown("---")
 st.markdown(
