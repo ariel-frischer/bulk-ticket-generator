@@ -62,7 +62,7 @@ with col2:
 with col3:
     branch = st.text_input("Branch", value="main")
 
-greptile = GreptileAPI(st.session_state.greptile_api_key, st.session_state.github_token)
+greptile = GreptileAPI(st.session_state.greptile_api_key_input, st.session_state.github_token_input)
 
 
 def load_templates(template_dir):
