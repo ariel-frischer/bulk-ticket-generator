@@ -33,24 +33,18 @@ st.text_input(
     type="password",
     key="greptile_api_key_input",
     value=st.session_state.greptile_api_key,
-    on_change=lambda: setattr(
-        st.session_state, "greptile_api_key", st.session_state.greptile_api_key_input
-    ),
 )
 st.text_input(
     "GitHub Token (required)",
     type="password",
     key="github_token_input",
     value=st.session_state.github_token,
-    on_change=lambda: setattr(
-        st.session_state, "github_token", st.session_state.github_token_input
-    ),
 )
 
 
 def are_api_keys_provided():
-    return bool(st.session_state.greptile_api_key) and bool(
-        st.session_state.github_token
+    return bool(st.session_state.greptile_api_key_input) and bool(
+        st.session_state.github_token_input
     )
 
 
@@ -134,7 +128,11 @@ if "tickets" not in st.session_state:
     st.session_state.tickets = None
 
 # if not st.session_state.create_ticket_list_state:
-if st.button("Create Ticket List", disabled=not are_api_keys_provided()):
+button_disabled = not are_api_keys_provided()
+help_text = (
+    "Must Provide Greptile API Key and GitHub Token" if button_disabled else None
+)
+if st.button("Create Ticket List", disabled=button_disabled, help=help_text):
     st.session_state.create_ticket_list_state = True
     if repository:
 

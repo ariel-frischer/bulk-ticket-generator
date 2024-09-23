@@ -2,6 +2,8 @@
 
 A simple Streamlit app allowing the bulk generation of Github issues using Greptile codebase context.
 
+**Live Demo**: [Bulk Ticket Generator](https://bulk-ticket-generator-ukt3bugc8hzrmvyggyaa34.streamlit.app/)
+
 ## Features:
 
 🧠 Leverages Greptile to provide codebase context to LLM queries for more relevant ticket generation
