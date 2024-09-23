@@ -172,7 +172,7 @@ display_detailed_tickets(
 st.markdown("---")
 st.markdown(
     "<div style='text-align: center; color: gray;'>"
-    "Created by Ariel Frischer | "
+    "Created by Ariel Frischer     |     "
     "<a href='mailto:arielfrischer@gmail.com'>arielfrischer@gmail.com</a>"
     "</div>",
     unsafe_allow_html=True,
