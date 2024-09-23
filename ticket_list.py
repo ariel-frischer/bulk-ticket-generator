@@ -65,17 +65,44 @@ async def create_ticket_list(
 
         message = response_json.get("message", "")
 
-        # Function to extract tickets from the message
+        # Smart extraction of parsing partly JSON text the LLM message
         def extract_tickets(msg):
             if isinstance(msg, dict) and "tickets" in msg:
                 return msg["tickets"]
             elif isinstance(msg, str):
+                # Try to find JSON content within the string
                 try:
-                    parsed = json.loads(msg)
-                    if isinstance(parsed, dict) and "tickets" in parsed:
-                        return parsed["tickets"]
+                    # Look for the start and end of a JSON object
+                    json_start = msg.find("{")
+                    json_end = msg.rfind("}")
+                    if json_start != -1 and json_end != -1 and json_end > json_start:
+                        # Extract the JSON part and parse it
+                        json_content = msg[json_start : json_end + 1]
+                        parsed = json.loads(json_content)
+                        if isinstance(parsed, dict) and "tickets" in parsed:
+                            return parsed["tickets"]
                 except json.JSONDecodeError:
-                    pass
+                    # If JSON object parsing fails, try to find an array of tickets
+                    try:
+                        # Look for the start and end of a JSON array
+                        array_start = msg.find("[")
+                        array_end = msg.rfind("]")
+                        if (
+                            array_start != -1
+                            and array_end != -1
+                            and array_end > array_start
+                        ):
+                            # Extract the array part and parse it
+                            array_content = msg[array_start : array_end + 1]
+                            parsed = json.loads(array_content)
+                            if isinstance(parsed, list):
+                                return parsed
+                    except json.JSONDecodeError:
+                        logging.error("Failed to parse JSON array from message")
+                except Exception as e:
+                    logging.error(
+                        f"Unexpected error while extracting tickets: {str(e)}"
+                    )
             return None
 
         tickets = extract_tickets(message)
